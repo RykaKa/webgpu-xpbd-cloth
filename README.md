@@ -1,4 +1,5 @@
 # XPBD Cloth Simulation on WebGPU
+![Cloth simulation](./Simulation.png)
 
 Простая модель симуляции ткани методом **Extended Position Based Dynamics (XPBD)** 
 на **WebGPU**. Реализация без сторонних рендер-движков — только чистый JavaScript, 
