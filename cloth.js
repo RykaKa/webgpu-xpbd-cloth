@@ -21,7 +21,7 @@ const CLOTH_SIZE = 1.0;           // cloth size: 1 m × 1 m
 const GRID_N = 20;            // 20 × 20 cells = 21 × 21 vertices
 const VERTEX_COUNT = (GRID_N + 1) * (GRID_N + 1);
 
-const SUBSTEPS = 10;   // substeps per frame
+const SUBSTEPS = 20;   // substeps per frame
 const CONSTRAINT_ITERATIONS = 1;
 const COMPLIANCE = 1e-5; // stiff cloth
 const DAMPING = 0.99; // natural decay
@@ -379,27 +379,39 @@ fn updateVelocities(@builtin(global_invocation_id) gid : vec3u) {
 
     var v = vertices[idx];
 
-    // Forcefully move central vertex: smooth sine (per task) + periodic impulse
-    // to excite traveling waves.
+
+    // // Forcefully move central vertex: smooth sine (per task) + periodic impulse
+    // // to excite traveling waves.
+    // if (idx == params.centerIndex) {
+    //     let phase = params.time * params.waveFrequency;
+    //     let baseY = params.waveAmplitude * sin(phase);
+
+    //     // Periodic impulse every IMPULSE_PERIOD seconds.
+    //     // The impulse is a short, sharp bump that excites all vibration modes.
+    //     let impulsePeriod = 3.0;     // seconds between impulses
+    //     let impulseWidth  = 0.15;    // impulse duration, seconds
+    //     let impulseAmp    = 0.20;    // impulse height, meters
+
+    //     let tMod = params.time - floor(params.time / impulsePeriod) * impulsePeriod;
+    //     var impulseY = 0.0;
+    //     if (tMod < impulseWidth) {
+    //         // Half-sine bump: rises and falls within impulseWidth.
+    //         let s = tMod / impulseWidth;              // 0..1
+    //         impulseY = impulseAmp * sin(s * 3.14159265);
+    //     }
+
+    //     v.pos.y = baseY + impulseY;
+    //     v.vel.x = 0.0;
+    //     v.vel.y = params.waveAmplitude * params.waveFrequency * cos(phase);
+    //     v.vel.z = 0.0;
+    //     vertices[idx] = v;
+    //     return;
+    // }
+
+    // Forcefully move central vertex along a sine (per task specification).
     if (idx == params.centerIndex) {
         let phase = params.time * params.waveFrequency;
-        let baseY = params.waveAmplitude * sin(phase);
-
-        // Periodic impulse every IMPULSE_PERIOD seconds.
-        // The impulse is a short, sharp bump that excites all vibration modes.
-        let impulsePeriod = 3.0;     // seconds between impulses
-        let impulseWidth  = 0.15;    // impulse duration, seconds
-        let impulseAmp    = 0.20;    // impulse height, meters
-
-        let tMod = params.time - floor(params.time / impulsePeriod) * impulsePeriod;
-        var impulseY = 0.0;
-        if (tMod < impulseWidth) {
-            // Half-sine bump: rises and falls within impulseWidth.
-            let s = tMod / impulseWidth;              // 0..1
-            impulseY = impulseAmp * sin(s * 3.14159265);
-        }
-
-        v.pos.y = baseY + impulseY;
+        v.pos.y = params.waveAmplitude * sin(phase);
         v.vel.x = 0.0;
         v.vel.y = params.waveAmplitude * params.waveFrequency * cos(phase);
         v.vel.z = 0.0;
