@@ -1,0 +1,22 @@
+{
+  "name": "extendedpositionbaseddynamics",
+  "version": "1.0.0",
+  "description": "XPBD cloth simulation on WebGPU",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes serve . -l 3000"
+  },
+  "keywords": [
+    "webgpu",
+    "xpbd",
+    "cloth",
+    "simulation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "eslint": "^10.10.0"
+  }
+}
