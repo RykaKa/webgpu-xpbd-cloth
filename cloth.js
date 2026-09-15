@@ -22,14 +22,13 @@ const GRID_N = 20;            // 20 × 20 cells = 21 × 21 vertices
 const VERTEX_COUNT = (GRID_N + 1) * (GRID_N + 1);
 
 const SUBSTEPS = 20;   // substeps per frame
-const CONSTRAINT_ITERATIONS = 1;
-const COMPLIANCE = 1e-5; // stiff cloth
-const DAMPING = 0.99; // natural decay
+const COMPLIANCE = 5e-5; // stiff cloth
+const DAMPING = 0.999; // natural decay
 const GRAVITY_Y = -9.81; // m/s²
 const DT = 1.0 / 60.0;
 const SUB_DT = DT / SUBSTEPS;
 
-const WAVE_AMPLITUDE = 0.15;        // center wave amplitude, m
+const WAVE_AMPLITUDE = 0.1;        // center wave amplitude, m
 const WAVE_FREQUENCY = 1.0;         // angular frequency, rad/s
 
 const VERTEX_FLOATS = 12;           // 12 floats = 48 bytes per vertex
@@ -491,16 +490,40 @@ fn fs_main(in : VertexOutput) -> @location(0) vec4f {
     let diff = max(dot(N, -L), 0.0);
     let lighting = 0.3 + diff * 0.7;
 
+    // let e1 = smoothstep(0.0, 0.02, abs(fract(in.worldPos.x * 20.0) - 0.5));
+    // let e2 = smoothstep(0.0, 0.02, abs(fract(in.worldPos.z * 20.0) - 0.5));
+    // let edge = min(e1, e2);
+
+    // var baseColor = vec3f(0.65, 0.70, 0.75);
+    // if (in.isPinned > 0.5) {
+    //     baseColor = vec3f(0.9, 0.2, 0.2);   // red for pinned
+    // }
+    // if (in.isCenter > 0.5) {
+    //     baseColor = vec3f(0.2, 0.4, 1.0);   // blue for central
+    // }
+    // baseColor = mix(baseColor * 0.3, baseColor, edge);
+
+    // Grid along X and Z (sides of the squares)
     let e1 = smoothstep(0.0, 0.02, abs(fract(in.worldPos.x * 20.0) - 0.5));
     let e2 = smoothstep(0.0, 0.02, abs(fract(in.worldPos.z * 20.0) - 0.5));
-    let edge = min(e1, e2);
+
+    // Diagonal inside each cell.
+    // Geometrically, each cell is split by the diagonal bl -> tr,
+    // i.e. from (0, 1) to (1, 0). Equation: cellX + cellZ = 1.
+    let cellX = fract(in.worldPos.x * 20.0);
+    let cellZ = fract(in.worldPos.z * 20.0);
+    let diagAnti = abs(cellX + cellZ - 1.0);
+    let e3 = smoothstep(0.0, 0.02, diagAnti);
+
+    // Final darkening: square + diagonal.
+    let edge = min(min(e1, e2), e3);
 
     var baseColor = vec3f(0.65, 0.70, 0.75);
     if (in.isPinned > 0.5) {
-        baseColor = vec3f(0.9, 0.2, 0.2);   // red for pinned
+        baseColor = vec3f(0.9, 0.2, 0.2);   // красный для закреплённых
     }
     if (in.isCenter > 0.5) {
-        baseColor = vec3f(0.2, 0.4, 1.0);   // blue for central
+        baseColor = vec3f(0.2, 0.4, 1.0);   // синий для центральной
     }
     baseColor = mix(baseColor * 0.3, baseColor, edge);
 
